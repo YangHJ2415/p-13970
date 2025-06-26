@@ -9,6 +9,9 @@ spring:
   datasource:
     hikari:
       auto-commit: false
+  jackson:
+    serialization:
+      fail-on-empty-beans: false # JSON 결과가 비어도 오류가 발생하지 않도록
   jpa:
     show-sql: true
     hibernate:
