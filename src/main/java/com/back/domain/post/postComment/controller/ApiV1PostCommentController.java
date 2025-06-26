@@ -7,10 +7,7 @@ import com.back.domain.post.postComment.entity.PostComment;
 import com.back.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -46,9 +43,9 @@ public class ApiV1PostCommentController {
         return new PostCommentDto(postComment);
     }
 
-    @GetMapping("/{id}/delete") // 댓글 삭제
+    @DeleteMapping("/{id}") // 댓글 삭제
     @Transactional
-    public RsData delete(
+    public RsData<PostCommentDto> delete(
             @PathVariable int postId,
             @PathVariable int id
     ) {
@@ -57,6 +54,6 @@ public class ApiV1PostCommentController {
 
         postService.deleteComment(post, postComment); // 댓글 삭제
 
-        return new RsData("200-1","%번 댓글 삭제완료".formatted(id), new PostCommentDto(postComment));
+        return new RsData<>("200-1","%번 댓글 삭제완료".formatted(id), new PostCommentDto(postComment));
     }
 }
