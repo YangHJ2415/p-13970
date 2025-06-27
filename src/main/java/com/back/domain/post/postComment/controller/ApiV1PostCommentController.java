@@ -5,6 +5,9 @@ import com.back.domain.post.post.service.PostService;
 import com.back.domain.post.postComment.dto.PostCommentDto;
 import com.back.domain.post.postComment.entity.PostComment;
 import com.back.global.rsData.RsData;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -55,5 +58,30 @@ public class ApiV1PostCommentController {
         postService.deleteComment(post, postComment); // 댓글 삭제
 
         return new RsData<>("200-1","%번 댓글 삭제완료".formatted(id), new PostCommentDto(postComment));
+    }
+
+    record PostCommentModifyReqBody(
+            @NotBlank
+            @Size(min = 2, max = 5000)
+            String content
+    ) {
+    }
+
+    @PutMapping("/{id}") // 댓글 수정
+    @Transactional
+    public RsData<Void> modify(
+            @PathVariable int postId,
+            @PathVariable int id,
+            @Valid @RequestBody PostCommentModifyReqBody reqBody
+    ) {
+        Post post = postService.findById(postId).get();
+        PostComment postComment = post.findCommentById(id).get();
+
+        postService.modifyComment(postComment, reqBody.content()); // 댓글 수정
+
+        return new RsData<>(
+                "200-1",
+                "%d번 댓글 수정완료".formatted(post.getId())
+        ); // 수정된 댓글 반환은 하지 않음
     }
 }
