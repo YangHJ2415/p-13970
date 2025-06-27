@@ -60,18 +60,23 @@ public class ApiV1PostController {
             @Size(min = 2, max = 5000)
             String content
     ) {
+    }
 
+    record PostWriteResBody(
+            long totalCount,
+            PostDto post
+    ){
     }
 
     @PostMapping
     @Transactional
-    public RsData<PostDto> write( @Valid @RequestBody PostWriteReqBody form) {
+    public RsData<PostWriteResBody> write(@Valid @RequestBody PostWriteReqBody form) {
         Post post = postService.write(form.title, form.content);
 
         return new RsData<>(
                 "200-1",
-                "%d번 글이 생성되었습니다.".formatted(post.getId()),
-                new PostDto(post)
+                "%d번 글이 작성되었습니다.".formatted(post.getId()),
+                new PostWriteResBody(postService.count(), new PostDto(post))
         ); // 생성된 포스트 반환
     }
 }
