@@ -51,4 +51,8 @@ public class PostService {
     public void delete(Post post) {
         postRepository.delete(post);
     }
+
+    public Optional<Post> findLatest() { // 가장 최근에 작성된 포스트를 찾기 위한 메소드
+        return postRepository.findFirstByOrderByIdDesc();
+    }
 }
