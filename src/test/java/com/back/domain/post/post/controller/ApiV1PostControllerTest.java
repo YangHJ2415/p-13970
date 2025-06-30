@@ -15,12 +15,13 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ActiveProfiles // "application-test.yml 활성화 하기 위한 코드"
 @SpringBootTest // "스프링 부트 테스트를 위한 어노테이션"
-@AutoConfigureMockMvc // "MockMvc를 자동으로 구성"
+@AutoConfigureMockMvc // "Mock를 자동으로 구성"
 @Transactional // "테스트 후 트랜잭션을 롤백하여 DB 초기화"
 public class ApiV1PostControllerTest {
     @Autowired // "의존성 주입을 통해 필요한 빈을 가져옵니다."
@@ -45,7 +46,6 @@ public class ApiV1PostControllerTest {
         ).andDo(print()); // "MockMvc를 사용하여 HTTP 요청을 하고, 출력."
 
         Post post = postService.findLatest().get();
-        long totalCount = postService.count();
 
         // "응답 상태를 검증합니다."
         resultActions
@@ -56,10 +56,37 @@ public class ApiV1PostControllerTest {
                 .andExpect(jsonPath("$.resultCode").value("201-1")) // "resultCode가 201-1인지 확인합니다."
                 .andExpect(jsonPath("$.msg").value("%d번 글이 작성되었습니다.".formatted(post.getId()))) // "msg가 'n번 글이 작성되었습니다.' 형식인지 확인합니다."
                 .andExpect(jsonPath("$.data.post.id").value(post.getId())) // "data.post.id가 작성된 글의 ID와 일치하는지 확인합니다."
-                .andExpect(jsonPath("$.data.totalCount").value(totalCount))
                 .andExpect(jsonPath("$.data.post.createDate").value(Matchers.startsWith(post.getCreateDate().toString().substring(0, 20)))) // "data.post.createDate가 작성된 글의 생성 날짜와 일치하는지 확인합니다."
                 .andExpect(jsonPath("$.data.post.modifyDate").value(Matchers.startsWith(post.getModifyDate().toString().substring(0, 20)))) // "data.post.modifyDate가 작성된 글의 수정 날짜와 일치하는지 확인합니다."
                 .andExpect(jsonPath("$.data.post.title").value("제목")) // "data.post.title가 요청 본문의 제목과 일치하는지 확인합니다."
                 .andExpect(jsonPath("$.data.post.content").value("내용")); // "data.post.content가 요청 본문의 내용과 일치하는지 확인합니다."
+    }
+
+    @Test
+    @DisplayName("글 수정")
+    void t2() throws Exception{
+        int id = 1; // "수정할 글의 ID"
+
+        ResultActions resultActions = mvc.perform(
+                put("/api/v1/posts/" + id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "title": "수정된 제목",
+                                    "content": "수정된 내용"
+                                }
+                                """)
+                )
+                .andDo(print()); // "MockMvc를 사용하여 HTTP 요청을 하고, 출력."
+
+        resultActions
+                .andExpect(status().isOk());
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostController.class))
+                .andExpect(handler().methodName("modify"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value("200-1"))
+                .andExpect(jsonPath("$.msg").value("%d번 글이 수정되었습니다.".formatted(id)));
+
     }
 }
